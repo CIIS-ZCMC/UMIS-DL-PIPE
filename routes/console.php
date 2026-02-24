@@ -8,12 +8,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Schedule::command('app:pull-device-logs')->everyFifteenMinutes();
+Schedule::command('app:pull-device-logs')->everyFifteenMinutes();
 
-// Schedule::command('app:push-device-logs')->everyThirtyMinutes();
+Schedule::command('app:push-device-logs')->everyThirtyMinutes();
 
 
 
-Schedule::command('app:pull-device-logs')->everyMinute();
+// Schedule::command('app:pull-device-logs')->everyMinute();
 
-Schedule::command('app:push-device-logs')->everyTwoMinutes();
+// Schedule::command('app:push-device-logs')->everyMinute();

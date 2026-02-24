@@ -28,46 +28,55 @@ class PushDeviceLogs extends Command
      */
     public function handle()
     {
-        $this->line("<fg=cyan>Starting Log Sync to UMIS...</>");
+        try {
+            $this->line("<fg=cyan>Starting Log Sync to UMIS...</>");
 
-        $api = "http://localhost:8000/api/syncDeviceLogs";
-        // 1. Get total count for the progress bar
-        $total = DeviceLogs::count();
+            $api = "http://localhost:8000/api/syncDeviceLogs";
 
-        if ($total === 0) {
-            $this->warn("No logs found to push.");
-            return;
-        }
+            $currentMonth = Carbon::now()->format('m');
+            $currentYear = Carbon::now()->format('Y');
 
-        $bar = $this->output->createProgressBar($total);
-        $bar->start();
 
-        $currentMonth = Carbon::now()->format('m');
-        $currentYear = Carbon::now()->format('Y');
+            // 1. Get total count for the progress bar
+            $total = DeviceLogs::whereMonth("dtr_date", $currentMonth)
+                ->whereYear("dtr_date", $currentYear)->count();
 
-        DeviceLogs::whereMonth("dtr_date", $currentMonth)
-            ->whereYear("dtr_date", $currentYear)
-            ->chunk(100, function ($logs) use ($api, $bar) {
-                try {
-                    $response = Http::withHeaders([
-                        'Accept' => 'application/json'
-                    ])->post($api, [
-                        'test' => "sync_batch",
-                        'data' => $logs
-                    ]);
+            if ($total === 0) {
+                $this->warn("No logs found to push.");
+                return;
+            }
 
-                    if ($response->successful()) {
-                        $bar->advance(count($logs));
-                    } else {
-                        $this->error("\nBatch failed with status: " . $response->status());
+            $bar = $this->output->createProgressBar($total);
+            $bar->start();
+
+
+
+            DeviceLogs::whereMonth("dtr_date", $currentMonth)
+                ->whereYear("dtr_date", $currentYear)
+                ->chunk(100, function ($logs) use ($api, $bar) {
+                    try {
+                        $response = Http::withHeaders([
+                            'Accept' => 'application/json'
+                        ])->post($api, [
+                            'test' => "sync_batch",
+                            'data' => $logs
+                        ]);
+
+                        if ($response->successful()) {
+                            $bar->advance(count($logs));
+                        } else {
+                            $this->error("\nBatch failed with status: " . $response->status());
+                        }
+                    } catch (\Exception $e) {
+                        $this->error("\nConnection Error: " . $e->getMessage());
+                        return false;
                     }
-                } catch (\Exception $e) {
-                    $this->error("\nConnection Error: " . $e->getMessage());
-                    return false;
-                }
-            });
+                });
 
-        $bar->finish();
-        $this->line("\n<info>Sync Completed Successfully!</info>");
+            $bar->finish();
+            $this->line("\n<info>Sync Completed Successfully!</info>");
+        } catch (\Throwable $th) {
+            $this->error("Error: " . $th->getMessage());
+        }
     }
 }
