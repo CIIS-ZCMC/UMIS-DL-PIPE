@@ -31,7 +31,7 @@ class PushDeviceLogs extends Command
         try {
             $this->line("<fg=cyan>Starting Log Sync to UMIS...</>");
 
-            $api = "http://localhost:8000/api/syncDeviceLogs";
+            $api = "https://umis.zcmc.online/api/syncDeviceLogs";
 
             $currentMonth = Carbon::now()->format('m');
             $currentYear = Carbon::now()->format('Y');
