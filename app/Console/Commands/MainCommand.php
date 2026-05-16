@@ -31,6 +31,7 @@ class MainCommand extends Command
             $options = [
                 'Connect & Pull Logs',
                 'Push DTR Logs',
+                'Update Device User data',
                 'Exit'
             ];
 
@@ -43,6 +44,11 @@ class MainCommand extends Command
 
                 case 'Push DTR Logs':
                     $this->call('app:push-device-logs');
+                    break;
+
+                case 'Update Device User data':
+
+                    $this->call('app:update-device-user-data');
                     break;
 
                 case 'Exit':
